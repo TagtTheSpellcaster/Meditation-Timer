@@ -1,54 +1,54 @@
-# Zen Meditation Timer 🧘‍♂️
+# Meditation Timer 🧘‍♂️
 
 ![Version](https://img.shields.io/badge/version-1.1-blue.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Active-brightgreen.svg)
 ![PWA Ready](https://img.shields.io/badge/PWA-Ready-orange.svg)
 
-Una web application essenziale, fluida e reattiva progettata per accompagnare la sessione di meditazione con il suono sintetizzato di campane tibetane. 
+An essential, smooth, and responsive web application designed to guide meditation sessions using real-time synthesized singing bowls.
 
-Disponibile come **Progressive Web App (PWA)**, installabile su dispositivi Android, iOS e Desktop per un utilizzo offline senza interruzioni.
+Available as a **Progressive Web App (PWA)**, installable on Android, iOS, and Desktop devices for uninterrupted offline use.
 
 📍 **Live Demo:** [https://tagtthespellcaster.github.io/Meditation-Timer/](https://tagtthespellcaster.github.io/Meditation-Timer/)
 
 ---
 
-## 📋 Caratteristiche (v1.1)
+## 📋 Features (v1.1)
 
-- **Sintesi Audio in Tempo Reale:** Suoni di campane tibetane generati tramite Web Audio API (nessun file audio esterno o ritardo di caricamento).
-- **Selezione del Tono:** 6 differenti profili sonori selezionabili (dalle frequenze basse dei gong alle campane ad alta risonanza).
-- **Gestione Fasi di Preparazione:** Possibilità di impostare un periodo di riscaldamento iniziale (regolabile a intervalli di 10 secondi, fino a un massimo del 20% del tempo totale).
-- **Suddivisione in Intervalli:** Possibilità di ripartire la sessione in più periodi uguali, separati da un rintocco a volume ridotto (50%).
-- **Persistenza delle Impostazioni:** Salvataggio automatico delle preferenze correnti in `localStorage`.
-- **Tracciamento Statistiche:** Monitoraggio dei minuti totali di meditazione accumulati nel tempo.
-- **Supporto PWA Offline:** Installabile direttamente sulla schermata Home dello smartphone o del computer tramite Service Worker.
-- **Interfaccia Zen:** Design scuro ad alto contrasto con anello di avanzamento circolare e animazioni fluide.
-
----
-
-## 🛠️ Modello Logico degli Intervalli
-
-Il tempo di preparazione è **incluso** nel tempo totale di meditazione selezionato.
-
-*Esempio:*
-- **Tempo totale:** 10 minuti
-- **Preparazione:** 1 minuto
-- **Intervalli:** 2 periodi
-
-**Sequenza temporale:**
-1. **00:00** — Suono iniziale (inizio preparazione)
-2. **01:00** — Suono principale a pieno volume (fine preparazione / inizio meditazione effettiva)
-3. **05:30** — Suono di metà percorso a volume ridotto (50%)
-4. **10:00** — Suono finale a pieno volume (conclusione)
+- **Real-Time Audio Synthesis:** Singing bowl sounds generated via the Web Audio API (no external audio files or loading delays).
+- **Tone Selection:** 6 distinct audio profiles (ranging from deep low gongs to high-resonance bell chimes).
+- **Preparation Phase:** Configurable initial warm-up period (adjustable in 10-second increments, capped at a maximum of 20% of total time).
+- **Interval Splitting:** Divide session duration into equal periods separated by a half-volume (50%) chime.
+- **Settings Persistence:** Automatic saving and loading of current preferences via `localStorage`.
+- **Statistics Tracking:** Monitor total accumulated meditation time over time.
+- **Offline PWA Support:** Installable directly onto your smartphone or computer home screen via Service Worker.
+- **Zen Interface:** High-contrast dark theme featuring a smooth circular progress ring and fluid animations.
 
 ---
 
-## 📦 Struttura del Progetto
+## 🛠️ Interval Logic Model
+
+The preparation time is **included** within the selected total meditation time.
+
+*Example:*
+- **Total Time:** 10 minutes
+- **Preparation:** 1 minute
+- **Intervals:** 2 periods
+
+**Timeline:**
+1. **00:00** — Initial chime (preparation starts)
+2. **01:00** — Full-volume chime (preparation ends / main meditation session begins)
+3. **05:30** — Midpoint half-volume chime (50%)
+4. **10:00** — Final full-volume chime (session completion)
+
+---
+
+## 📦 Project Structure
 
 ```text
-├── index.html       # Applicazione principale (HTML5, CSS3, JS ES6)
-├── manifest.json    # Configurazione Progressive Web App
-├── sw.js            # Service Worker per la gestione della cache offline
-├── icon-192.png     # Icona app (192x192)
-├── icon-512.png     # Icona app (512x512)
-└── LICENSE          # Licenza MIT
+├── index.html       # Main application file (HTML5, CSS3, JS ES6)
+├── manifest.json    # Progressive Web App configuration
+├── sw.js            # Service Worker for offline caching
+├── icon-192.png     # Application icon (192x192)
+├── icon-512.png     # Application icon (512x512)
+└── LICENSE          # MIT License
