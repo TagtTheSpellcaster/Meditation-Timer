@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zen Meditation Timer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Cinzel', 'serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        zen: {
+                            bg: '#0c0f12',
+                            card: '#141a21',
+                            accent: '#d4af37', // Gold
+                            prep: '#e07a5f',   // Warm Amber/Terracotta for prep phase
+                            text: '#e2e8f0',
+                            muted: '#94a3b8',
+                            border: '#2a3441'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0c0f12;
+            color: #e2e8f0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Ambient background glow */
+        .ambient-bg {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.07) 0%, rgba(20, 26, 33, 0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            transition: all 1s ease;
+        }
+
+        .timer-running .ambient-bg {
+            animation: pulseGlow 8s infinite alternate ease-in-out;
+        }
+
+        .timer-prep .ambient-bg {
+            background: radial-gradient(circle, rgba(224, 122, 95, 0.12) 0%, rgba(20, 26, 33, 0) 70%);
+        }
+
+        @keyframes pulseGlow {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+            100% { transform: translate(-50%, -50%) scale(1.35); opacity: 0.9; }
+        }
+
+        /* Ring Transition */
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.35s linear, stroke 0.5s ease;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0c0f12;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a3441;
+            border-radius: 3px;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="relative flex flex-col justify-between items-center min-h-screen p-4 sm:p-6 text-zen-text select-none">
+
+    <div class="ambient-bg" id="ambientBg"></div>
+
+    <!-- Header Section -->
+    <header class="relative z-10 text-center mt-2 sm:mt-4 mb-2 flex flex-col items-center">
+        <h1 class="font-serif text-2xl sm:text-3xl font-semibold tracking-widest text-amber-100/90 uppercase">
+            Zen Meditation
+        </h1>
+        <p class="text-xs sm:text-sm text-zen-muted mt-1 tracking-wider">Mindful Presence & Inner Peace</p>
+        
+        <!-- Total Meditated Time Counter Badge -->
+        <div class="mt-3 inline-flex items-center space-x-2 bg-zen-card/80 border border-zen-border px-3 py-1.5 rounded-full text-xs text-amber-200/80 shadow-md">
+            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>Total Meditated: <strong id="statsTotalTime" class="text-white font-mono font-medium">0m</strong></span>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="relative z-10 flex-1 flex flex-col items-center justify-center w-full max-w-lg mx-auto">
+        
+        <!-- Circular Timer Container -->
+        <div class="relative flex items-center justify-center my-2">
+            <svg class="w-72 h-72 sm:w-80 sm:h-80 drop-shadow-2xl" viewBox="0 0 280 280">
+                <!-- Background Track Ring -->
+                <circle
+                    class="text-zen-card"
+                    stroke-width="8"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="120"
+                    cx="140"
+                    cy="140"
+                />
+                <!-- Active Progress Ring -->
+                <circle
+                    id="progressRing"
+                    class="progress-ring__circle text-amber-500/80"
+                    stroke-width="8"
+                    stroke-dasharray="753.98"
+                    stroke-dashoffset="0"
+                    stroke-linecap="round"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="120"
+                    cx="140"
+                    cy="140"
+                />
+            </svg>
+
+            <!-- Center Display (Inside Ring) -->
+            <div class="absolute flex flex-col items-center justify-center text-center px-4">
+                <span id="intervalBadge" class="text-xs font-medium tracking-widest uppercase text-amber-200/70 mb-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 backdrop-blur-sm transition-colors duration-300">
+                    Ready
+                </span>
+                <div id="timeDisplay" class="font-serif text-5xl sm:text-6xl font-medium tracking-tight text-white my-1 drop-shadow-md">
+                    10:00
+                </div>
+                <span id="subtextDisplay" class="text-xs text-zen-muted tracking-wider mt-1 h-5 flex items-center justify-center">
+                    --
+                </span>
+            </div>
+        </div>
+
+        <!-- Controls Row -->
+        <div class="flex items-center space-x-4 my-4">
+            <!-- Reset Button -->
+            <button id="resetBtn" title="Reset Timer" class="p-4 rounded-full bg-zen-card hover:bg-zen-border text-zen-muted hover:text-white transition-all duration-200 shadow-lg border border-zen-border focus:outline-none focus:ring-2 focus:ring-amber-500/50 active:scale-95">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+            </button>
+
+            <!-- Main Play/Pause Button -->
+            <button id="playBtn" class="px-8 py-4 rounded-full bg-gradient-to-r from-amber-600 to-amber-500 text-slate-950 font-semibold text-lg shadow-xl hover:shadow-amber-500/20 hover:brightness-110 active:scale-95 transition-all duration-200 flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                <svg id="playIcon" class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+                <svg id="pauseIcon" class="w-6 h-6 fill-current hidden" viewBox="0 0 24 24">
+                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                </svg>
+                <span id="playBtnText">Start</span>
+            </button>
+
+            <!-- Settings Toggle Button -->
+            <button id="settingsBtn" title="Sound & Timer Settings" class="p-4 rounded-full bg-zen-card hover:bg-zen-border text-zen-muted hover:text-white transition-all duration-200 shadow-lg border border-zen-border focus:outline-none focus:ring-2 focus:ring-amber-500/50 active:scale-95">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Settings Panel Drawer -->
+        <div id="settingsPanel" class="w-full bg-zen-card/95 backdrop-blur-md rounded-2xl p-5 border border-zen-border shadow-2xl transition-all duration-300 max-h-0 opacity-0 overflow-hidden">
+            <div class="space-y-4 text-sm">
+                
+                <div class="border-b border-zen-border pb-2 flex justify-between items-center">
+                    <h3 class="font-semibold text-amber-200/90 uppercase tracking-wider text-xs">Session Configuration</h3>
+                    <button id="closeSettingsBtn" class="text-zen-muted hover:text-white">&times;</button>
+                </div>
+
+                <!-- Total Meditation Duration Input -->
+                <div>
+                    <label class="block text-xs font-medium text-zen-muted mb-1.5">Total Meditation Time</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="flex items-center bg-zen-bg rounded-lg border border-zen-border px-3 py-2">
+                            <input type="number" id="inputMinutes" min="0" max="180" value="10" class="w-full bg-transparent text-white focus:outline-none text-right font-mono pr-2">
+                            <span class="text-xs text-zen-muted">min</span>
+                        </div>
+                        <div class="flex items-center bg-zen-bg rounded-lg border border-zen-border px-3 py-2">
+                            <input type="number" id="inputSeconds" min="0" max="59" value="0" class="w-full bg-transparent text-white focus:outline-none text-right font-mono pr-2">
+                            <span class="text-xs text-zen-muted">sec</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preparation Time Input (Max 20% limit enforced) -->
+                <div>
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label class="block text-xs font-medium text-zen-muted">Preparation Time</label>
+                        <span id="prepMaxHint" class="text-[11px] text-amber-400/80 font-mono">Max: 2m 00s (20%)</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="flex-1 flex items-center bg-zen-bg rounded-lg border border-zen-border px-3 py-2">
+                            <input type="number" id="inputPrepSeconds" min="0" step="10" value="60" class="w-full bg-transparent text-white focus:outline-none font-mono">
+                            <span class="text-xs text-zen-muted whitespace-nowrap pl-1">seconds</span>
+                        </div>
+                        <div class="flex space-x-1">
+                            <button id="prepStepDown" class="px-3 py-2 bg-zen-bg hover:bg-zen-border border border-zen-border rounded-lg text-xs font-bold">-10s</button>
+                            <button id="prepStepUp" class="px-3 py-2 bg-zen-bg hover:bg-zen-border border border-zen-border rounded-lg text-xs font-bold">+10s</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subdivisions / Intervals Input -->
+                <div>
+                    <label class="block text-xs font-medium text-zen-muted mb-1.5">Subdivide Meditation Into</label>
+                    <div class="flex items-center bg-zen-bg rounded-lg border border-zen-border px-3 py-2">
+                        <input type="number" id="inputIntervals" min="1" max="12" value="1" class="w-full bg-transparent text-white focus:outline-none font-mono">
+                        <span class="text-xs text-zen-muted whitespace-nowrap pl-2">Equal Period(s)</span>
+                    </div>
+                </div>
+
+                <!-- Sound Selection & Test Button -->
+                <div>
+                    <label class="block text-xs font-medium text-zen-muted mb-1.5">Bell Sound Preset</label>
+                    <div class="flex space-x-2">
+                        <select id="bellSelect" class="flex-1 bg-zen-bg text-white border border-zen-border rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500 text-xs">
+                            <option value="bell1" selected>Bell 1: Deep Singing Bowl (Default)</option>
+                            <option value="bell2">Bell 2: Bright Tibetan Bell</option>
+                            <option value="bell3">Bell 3: Low Metallic Gong</option>
+                            <option value="bell4">Bell 4: Crystal Chime</option>
+                            <option value="bell5">Bell 5: Resonant Soft Bowl</option>
+                            <option value="bell6">Bell 6: Temple Bell</option>
+                        </select>
+                        <button id="testSoundBtn" class="px-3 py-2 bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-200 rounded-lg text-xs font-medium transition-colors whitespace-nowrap flex items-center space-x-1">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                            </svg>
+                            <span>Test</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 text-center text-xs text-zen-muted/60 py-2">
+        Synthesized Web Audio Engine &bull; GitHub Pages Ready
+    </footer>
+
+    <!-- JavaScript Application Engine -->
+    <script>
+        // Web Audio API Synthesizer for Singing Bowls & Bells
+        class BellSynthesizer {
+            constructor() {
+                this.audioCtx = null;
+            }
+
+            initContext() {
+                if (!this.audioCtx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.audioCtx = new AudioContext();
+                }
+                if (this.audioCtx.state === 'suspended') {
+                    this.audioCtx.resume();
+                }
+            }
+
+            play(preset = 'bell1', volume = 1.0) {
+                this.initContext();
+                const now = this.audioCtx.currentTime;
+
+                const masterGain = this.audioCtx.createGain();
+                masterGain.gain.setValueAtTime(volume, now);
+                masterGain.connect(this.audioCtx.destination);
+
+                const presets = {
+                    bell1: {
+                        baseFreq: 150,
+                        harmonics: [
+                            { mult: 1.0, gain: 0.8, decay: 6.0 },
+                            { mult: 2.76, gain: 0.5, decay: 5.0 },
+                            { mult: 5.4, gain: 0.25, decay: 3.5 },
+                            { mult: 8.9, gain: 0.1, decay: 2.0 }
+                        ],
+                        subPitch: 75
+                    },
+                    bell2: {
+                        baseFreq: 440,
+                        harmonics: [
+                            { mult: 1.0, gain: 0.7, decay: 4.0 },
+                            { mult: 2.0, gain: 0.6, decay: 3.5 },
+                            { mult: 3.01, gain: 0.4, decay: 2.5 },
+                            { mult: 4.2, gain: 0.2, decay: 1.8 }
+                        ]
+                    },
+                    bell3: {
+                        baseFreq: 110,
+                        harmonics: [
+                            { mult: 1.0, gain: 1.0, decay: 7.0 },
+                            { mult: 1.58, gain: 0.6, decay: 5.0 },
+                            { mult: 2.24, gain: 0.4, decay: 4.0 },
+                            { mult: 2.55, gain: 0.3, decay: 3.0 }
+                        ],
+                        subPitch: 55
+                    },
+                    bell4: {
+                        baseFreq: 880,
+                        harmonics: [
+                            { mult: 1.0, gain: 0.6, decay: 3.0 },
+                            { mult: 2.005, gain: 0.5, decay: 2.5 },
+                            { mult: 3.01, gain: 0.3, decay: 2.0 },
+                            { mult: 4.1, gain: 0.15, decay: 1.2 }
+                        ]
+                    },
+                    bell5: {
+                        baseFreq: 220,
+                        harmonics: [
+                            { mult: 1.0, gain: 0.9, decay: 5.5 },
+                            { mult: 2.71, gain: 0.35, decay: 4.0 },
+                            { mult: 5.1, gain: 0.15, decay: 2.5 }
+                        ]
+                    },
+                    bell6: {
+                        baseFreq: 280,
+                        harmonics: [
+                            { mult: 1.0, gain: 0.85, decay: 6.5 },
+                            { mult: 2.0, gain: 0.5, decay: 5.0 },
+                            { mult: 3.4, gain: 0.3, decay: 3.5 },
+                            { mult: 4.9, gain: 0.15, decay: 2.0 }
+                        ]
+                    }
+                };
+
+                const config = presets[preset] || presets.bell1;
+
+                config.harmonics.forEach(h => {
+                    const osc = this.audioCtx.createOscillator();
+                    const gain = this.audioCtx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(config.baseFreq * h.mult, now);
+                    osc.detune.setValueAtTime((Math.random() - 0.5) * 2, now);
+
+                    gain.gain.setValueAtTime(h.gain, now);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + h.decay);
+
+                    osc.connect(gain);
+                    gain.connect(masterGain);
+
+                    osc.start(now);
+                    osc.stop(now + h.decay);
+                });
+
+                if (config.subPitch) {
+                    const subOsc = this.audioCtx.createOscillator();
+                    const subGain = this.audioCtx.createGain();
+                    subOsc.type = 'sine';
+                    subOsc.frequency.setValueAtTime(config.subPitch, now);
+                    subGain.gain.setValueAtTime(0.4, now);
+                    subGain.gain.exponentialRampToValueAtTime(0.0001, now + 5.0);
+                    subOsc.connect(subGain);
+                    subGain.connect(masterGain);
+                    subOsc.start(now);
+                    subOsc.stop(now + 5.0);
+                }
+            }
+        }
+
+        const bellAudio = new BellSynthesizer();
+
+        const STORAGE_KEYS = {
+            SETTINGS: 'zen_meditation_settings_v1',
+            TOTAL_STATS: 'zen_meditation_total_completed_seconds'
+        };
+
+        // Application State
+        let timerState = {
+            isRunning: false,
+            totalSeconds: 600,            // Overall meditation time (including prep)
+            prepSeconds: 60,              // Preparation phase duration
+            remainingSeconds: 600,        // Countdown timer value
+            intervalsCount: 1,            // Number of main session periods
+            currentInterval: 1,           // Active period index (0 = Preparation Phase)
+            mainDuration: 540,            // totalSeconds - prepSeconds
+            mainIntervalDuration: 540,    // Duration per sub-period
+            timerId: null,
+            selectedBell: 'bell1',
+            completedTotalSeconds: 0      // Accumulated total from localStorage
+        };
+
+        // DOM Elements
+        const playBtn = document.getElementById('playBtn');
+        const playBtnText = document.getElementById('playBtnText');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        const resetBtn = document.getElementById('resetBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const subtextDisplay = document.getElementById('subtextDisplay');
+        const intervalBadge = document.getElementById('intervalBadge');
+        const progressRing = document.getElementById('progressRing');
+        const testSoundBtn = document.getElementById('testSoundBtn');
+        const bellSelect = document.getElementById('bellSelect');
+        const statsTotalTime = document.getElementById('statsTotalTime');
+        const prepMaxHint = document.getElementById('prepMaxHint');
+
+        const inputMinutes = document.getElementById('inputMinutes');
+        const inputSeconds = document.getElementById('inputSeconds');
+        const inputPrepSeconds = document.getElementById('inputPrepSeconds');
+        const prepStepDown = document.getElementById('prepStepDown');
+        const prepStepUp = document.getElementById('prepStepUp');
+        const inputIntervals = document.getElementById('inputIntervals');
+
+        // Circular Ring Constants
+        const RING_RADIUS = 120;
+        const CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+        progressRing.style.strokeDasharray = `${CIRCUMFERENCE} ${CIRCUMFERENCE}`;
+
+        function loadSavedData() {
+            // Load Accumulated Stats
+            const savedStats = localStorage.getItem(STORAGE_KEYS.TOTAL_STATS);
+            if (savedStats !== null) {
+                timerState.completedTotalSeconds = parseInt(savedStats, 10) || 0;
+            }
+            updateStatsDisplay();
+
+            // Load Saved Settings
+            const savedSettingsStr = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+            if (savedSettingsStr) {
+                try {
+                    const settings = JSON.parse(savedSettingsStr);
+                    if (settings.totalMinutes !== undefined) inputMinutes.value = settings.totalMinutes;
+                    if (settings.totalSecs !== undefined) inputSeconds.value = settings.totalSecs;
+                    if (settings.prepSeconds !== undefined) inputPrepSeconds.value = settings.prepSeconds;
+                    if (settings.intervals !== undefined) inputIntervals.value = settings.intervals;
+                    if (settings.selectedBell) bellSelect.value = settings.selectedBell;
+                } catch(e) {
+                    console.warn('Could not parse saved settings', e);
+                }
+            }
+        }
+
+        function saveCurrentSettings() {
+            const settings = {
+                totalMinutes: parseInt(inputMinutes.value) || 0,
+                totalSecs: parseInt(inputSeconds.value) || 0,
+                prepSeconds: parseInt(inputPrepSeconds.value) || 0,
+                intervals: parseInt(inputIntervals.value) || 1,
+                selectedBell: bellSelect.value
+            };
+            localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+        }
+
+        function saveCompletedTime(addedSeconds) {
+            timerState.completedTotalSeconds += addedSeconds;
+            localStorage.setItem(STORAGE_KEYS.TOTAL_STATS, timerState.completedTotalSeconds);
+            updateStatsDisplay();
+        }
+
+        function updateStatsDisplay() {
+            const totalSecs = timerState.completedTotalSeconds;
+            const hours = Math.floor(totalSecs / 3600);
+            const mins = Math.floor((totalSecs % 3600) / 60);
+
+            if (hours > 0) {
+                statsTotalTime.textContent = `${hours}h ${mins}m`;
+            } else {
+                statsTotalTime.textContent = `${mins}m`;
+            }
+        }
+
+        // Helper Time Formatter
+        function formatTime(secs) {
+            const m = Math.floor(secs / 60);
+            const s = Math.floor(secs % 60);
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function setProgress(fraction, isPrepMode = false) {
+            const offset = CIRCUMFERENCE - (fraction * CIRCUMFERENCE);
+            progressRing.style.strokeDashoffset = offset;
+
+            if (isPrepMode) {
+                progressRing.setAttribute('class', 'progress-ring__circle text-zen-prep');
+            } else {
+                progressRing.setAttribute('class', 'progress-ring__circle text-amber-500/80');
+            }
+        }
+
+        function updateStateFromInputs() {
+            if (timerState.isRunning) return;
+
+            const mins = Math.max(0, parseInt(inputMinutes.value) || 0);
+            const secs = Math.min(59, Math.max(0, parseInt(inputSeconds.value) || 0));
+            const intervals = Math.max(1, parseInt(inputIntervals.value) || 1);
+
+            let total = (mins * 60) + secs;
+            if (total < 10) total = 10; // Minimum 10 seconds session
+
+            // Preparation max 20% limit logic
+            const maxPrepSeconds = Math.floor(total * 0.20);
+            let prep = parseInt(inputPrepSeconds.value) || 0;
+
+            // Enforce 10-second steps & Max limit
+            prep = Math.min(prep, maxPrepSeconds);
+            prep = Math.max(0, Math.floor(prep / 10) * 10);
+            inputPrepSeconds.value = prep;
+
+            prepMaxHint.textContent = `Max: ${formatTime(maxPrepSeconds)} (20%)`;
+
+            timerState.totalSeconds = total;
+            timerState.prepSeconds = prep;
+            timerState.remainingSeconds = total;
+            timerState.intervalsCount = intervals;
+            timerState.selectedBell = bellSelect.value;
+
+            // Calculate main session subdivisions
+            timerState.mainDuration = Math.max(0, total - prep);
+            timerState.mainIntervalDuration = timerState.intervalsCount > 0 
+                ? timerState.mainDuration / timerState.intervalsCount 
+                : timerState.mainDuration;
+
+            timerState.currentInterval = (prep > 0) ? 0 : 1; // 0 = prep, 1..N = main periods
+
+            saveCurrentSettings();
+            updateUI();
+        }
+
+        function updateUI() {
+            timeDisplay.textContent = formatTime(timerState.remainingSeconds);
+
+            const isPrepPhase = timerState.prepSeconds > 0 && 
+                                (timerState.totalSeconds - timerState.remainingSeconds) < timerState.prepSeconds;
+
+            // Progress Ring Calculation
+            const progressFraction = timerState.totalSeconds > 0 
+                ? (timerState.totalSeconds - timerState.remainingSeconds) / timerState.totalSeconds 
+                : 0;
+            setProgress(progressFraction, isPrepPhase);
+
+            // UI Badges & Visual Classes
+            if (isPrepPhase && timerState.isRunning) {
+                document.body.classList.add('timer-prep');
+                intervalBadge.textContent = 'Preparation Phase';
+                intervalBadge.className = 'text-xs font-medium tracking-widest uppercase text-zen-prep mb-2 px-3 py-1 rounded-full bg-zen-prep/10 border border-zen-prep/30 backdrop-blur-sm';
+            } else {
+                document.body.classList.remove('timer-prep');
+                intervalBadge.className = 'text-xs font-medium tracking-widest uppercase text-amber-200/70 mb-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 backdrop-blur-sm';
+            }
+
+            if (!timerState.isRunning && timerState.remainingSeconds === timerState.totalSeconds) {
+                intervalBadge.textContent = 'Ready';
+                const mainMins = (timerState.mainDuration / 60).toFixed(1).replace('.0', '');
+                const subPeriodSecs = timerState.mainIntervalDuration;
+                const subPeriodMins = (subPeriodSecs / 60).toFixed(1).replace('.0', '');
+
+                if (timerState.prepSeconds > 0) {
+                    subtextDisplay.textContent = `Prep: ${timerState.prepSeconds}s | ${timerState.intervalsCount} Period(s) × ${subPeriodMins}m`;
+                } else {
+                    subtextDisplay.textContent = `${timerState.intervalsCount} Period(s) × ${subPeriodMins}m`;
+                }
+            } else if (timerState.remainingSeconds === 0) {
+                intervalBadge.textContent = 'Completed';
+                subtextDisplay.textContent = 'Session Finished';
+            } else if (!isPrepPhase) {
+                intervalBadge.textContent = `Period ${timerState.currentInterval} of ${timerState.intervalsCount}`;
+                subtextDisplay.textContent = `${formatTime(timerState.remainingSeconds)} remaining`;
+            } else {
+                subtextDisplay.textContent = 'Warm-up before meditation';
+            }
+        }
+
+        function tick() {
+            if (timerState.remainingSeconds <= 0) {
+                completeSession();
+                return;
+            }
+
+            timerState.remainingSeconds--;
+
+            const elapsedTime = timerState.totalSeconds - timerState.remainingSeconds;
+
+            // Check Transition from Prep to Main Period 1
+            if (timerState.prepSeconds > 0 && elapsedTime === timerState.prepSeconds) {
+                timerState.currentInterval = 1;
+                // Ring main bell at 100% volume to start main session
+                bellAudio.play(timerState.selectedBell, 1.0);
+            } 
+            // Check Main Period Sub-interval transitions
+            else if (elapsedTime > timerState.prepSeconds && timerState.remainingSeconds > 0) {
+                const mainElapsed = elapsedTime - timerState.prepSeconds;
+                const targetInterval = Math.min(
+                    timerState.intervalsCount,
+                    Math.floor(mainElapsed / timerState.mainIntervalDuration) + 1
+                );
+
+                if (targetInterval > timerState.currentInterval) {
+                    timerState.currentInterval = targetInterval;
+                    // Chime bell at 50% volume between sub-periods
+                    bellAudio.play(timerState.selectedBell, 0.5);
+                }
+            }
+
+            updateUI();
+        }
+
+        function startTimer() {
+            bellAudio.initContext();
+            
+            if (timerState.remainingSeconds <= 0) {
+                updateStateFromInputs();
+            }
+
+            // Play initial starting chime at 100% volume
+            if (timerState.remainingSeconds === timerState.totalSeconds) {
+                bellAudio.play(timerState.selectedBell, 1.0);
+            }
+
+            timerState.isRunning = true;
+            document.body.classList.add('timer-running');
+            playBtnText.textContent = 'Pause';
+            playIcon.classList.add('hidden');
+            pauseIcon.classList.remove('hidden');
+
+            timerState.timerId = setInterval(tick, 1000);
+            updateUI();
+        }
+
+        function pauseTimer() {
+            timerState.isRunning = false;
+            document.body.classList.remove('timer-running');
+            document.body.classList.remove('timer-prep');
+            clearInterval(timerState.timerId);
+
+            playBtnText.textContent = 'Resume';
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            playBtnText.textContent = 'Start';
+            updateStateFromInputs();
+        }
+
+        function completeSession() {
+            pauseTimer();
+            playBtnText.textContent = 'Start';
+            timerState.remainingSeconds = 0;
+            
+            // Add completed session time (excluding prep or total) to stats
+            saveCompletedTime(timerState.totalSeconds);
+
+            updateUI();
+            // Play final session bell at 100% volume
+            bellAudio.play(timerState.selectedBell, 1.0);
+        }
+
+        playBtn.addEventListener('click', () => {
+            if (timerState.isRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        });
+
+        resetBtn.addEventListener('click', resetTimer);
+
+        // Toggle Settings Drawer Panel
+        let isSettingsOpen = false;
+        function toggleSettings() {
+            isSettingsOpen = !isSettingsOpen;
+            if (isSettingsOpen) {
+                settingsPanel.classList.remove('max-h-0', 'opacity-0');
+                settingsPanel.classList.add('max-h-[600px]', 'opacity-100');
+            } else {
+                settingsPanel.classList.remove('max-h-[600px]', 'opacity-100');
+                settingsPanel.classList.add('max-h-0', 'opacity-0');
+            }
+        }
+
+        settingsBtn.addEventListener('click', toggleSettings);
+        closeSettingsBtn.addEventListener('click', toggleSettings);
+
+        // Test Sound Button
+        testSoundBtn.addEventListener('click', () => {
+            bellAudio.play(bellSelect.value, 1.0);
+        });
+
+        // Prep step buttons
+        prepStepDown.addEventListener('click', () => {
+            let val = (parseInt(inputPrepSeconds.value) || 0) - 10;
+            inputPrepSeconds.value = Math.max(0, val);
+            updateStateFromInputs();
+        });
+
+        prepStepUp.addEventListener('click', () => {
+            let val = (parseInt(inputPrepSeconds.value) || 0) + 10;
+            inputPrepSeconds.value = val;
+            updateStateFromInputs();
+        });
+
+        // Input changes
+        [inputMinutes, inputSeconds, inputPrepSeconds, inputIntervals].forEach(input => {
+            input.addEventListener('change', updateStateFromInputs);
+            input.addEventListener('keyup', updateStateFromInputs);
+        });
+
+        bellSelect.addEventListener('change', () => {
+            timerState.selectedBell = bellSelect.value;
+            saveCurrentSettings();
+        });
+
+        // Initialization
+        window.onload = function() {
+            loadSavedData();
+            updateStateFromInputs();
+        };
+    </script>
+</body>
+</html>
