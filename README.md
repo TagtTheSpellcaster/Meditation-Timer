@@ -1,6 +1,6 @@
 # Meditation Timer 🧘‍♂️
 
-![Version](https://img.shields.io/badge/version-1.1-blue.svg)
+![Version](https://img.shields.io/badge/version-1.1.1-blue.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Active-brightgreen.svg)
 ![PWA Ready](https://img.shields.io/badge/PWA-Ready-orange.svg)
@@ -13,7 +13,7 @@ Available as a **Progressive Web App (PWA)**, installable on Android, iOS, and D
 
 ---
 
-## 📋 Features (v1.1)
+## 📋 Features (v1.1.1)
 
 - **Real-Time Audio Synthesis:** Singing bowl sounds generated via the Web Audio API (no external audio files or loading delays).
 - **Tone Selection:** 6 distinct audio profiles (ranging from deep low gongs to high-resonance bell chimes).
