@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zen Meditation Timer</title>
@@ -745,6 +748,15 @@
             loadSavedData();
             updateStateFromInputs();
         };
+    </script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('Service Worker registrato con successo.', reg))
+            .catch(err => console.error('Errore registrazione Service Worker:', err));
+        });
+      }
     </script>
 </body>
 </html>
