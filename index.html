@@ -465,6 +465,11 @@
       initPracticesMenu();
       updatePrepMax();
       resetTimer();
+
+      // Listener per l'anteprima audio del tono campana selezionato
+      document.getElementById('bellSound').addEventListener('change', () => {
+        playBell(1.0);
+      });
     });
 
     // Gestione Screen Wake Lock API
