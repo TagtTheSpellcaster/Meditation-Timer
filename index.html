@@ -158,7 +158,7 @@
       stroke: var(--accent);
       stroke-dasharray: 722;
       stroke-dashoffset: 0;
-      transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+      transition: stroke-dashoffset 0.5s linear, stroke 0.3s ease;
     }
 
     .timer-text {
@@ -453,16 +453,44 @@
     let totalSeconds = 600;
     let prepSeconds = 60;
     let remainingSeconds = 600;
+    let targetEndTime = null;
     let isRunning = false;
     let currentPhase = 'idle'; // 'prep', 'meditation', 'idle'
     let accumulatedMinutes = 0;
     let intervalMarkers = [];
+    let wakeLock = null;
 
     window.addEventListener('DOMContentLoaded', () => {
       loadSettings();
       initPracticesMenu();
       updatePrepMax();
       resetTimer();
+    });
+
+    // Gestione Screen Wake Lock API
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+        }
+      } catch (err) {
+        console.warn('Wake Lock non disponibile o rifiutato:', err);
+      }
+    }
+
+    function releaseWakeLock() {
+      if (wakeLock !== null) {
+        wakeLock.release().then(() => {
+          wakeLock = null;
+        });
+      }
+    }
+
+    // Riattiva Wake Lock se la pagina riprende visibilità
+    document.addEventListener('visibilitychange', () => {
+      if (wakeLock !== null && document.visibilityState === 'visible' && isRunning) {
+        requestWakeLock();
+      }
     });
 
     function initPracticesMenu() {
@@ -577,55 +605,51 @@
       document.getElementById('statsBadge').textContent = `Totale meditato: ${h}h ${m}m`;
     }
 
-function playBell(volume = 1.0) {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
+    // Sintetizzatore Armonico di Campane Tibetane
+    function playBell(volume = 1.0) {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
 
-  const type = document.getElementById('bellSound').value;
-  const now = audioCtx.currentTime;
+      const type = document.getElementById('bellSound').value;
+      const now = audioCtx.currentTime;
 
-  // Profili di frequenze e armonici realistici per campane tibetane e gong
-  // Frequenza base, rapporti di sovrattoni (partials) e decadimenti relativi
-  const bellProfiles = {
-    '1': { base: 216, partials: [1.0, 2.76, 5.4, 8.9], decay: 6.0 },   // Campana Tibetana Profonda
-    '2': { base: 310, partials: [1.0, 2.71, 5.2, 8.1], decay: 5.0 },   // Campana Media Rinpoche
-    '3': { base: 432, partials: [1.0, 2.0, 3.01, 4.2], decay: 4.5 },   // Campana Armonica 432Hz
-    '4': { base: 180, partials: [1.0, 1.5, 2.4, 3.8], decay: 7.0 },    // Gong Zen Profondo
-    '5': { base: 120, partials: [1.0, 2.1, 3.5, 6.2], decay: 8.0 },    // Gong Basso
-    '6': { base: 528, partials: [1.0, 2.7, 4.8, 7.3], decay: 4.0 }     // Campana Tempio Solfeggio
-  };
+      const bellProfiles = {
+        '1': { base: 216, partials: [1.0, 2.76, 5.4, 8.9], decay: 6.0 },   // Campana Tibetana Profonda
+        '2': { base: 310, partials: [1.0, 2.71, 5.2, 8.1], decay: 5.0 },   // Campana Media Rinpoche
+        '3': { base: 432, partials: [1.0, 2.0, 3.01, 4.2], decay: 4.5 },   // Campana Armonica 432Hz
+        '4': { base: 180, partials: [1.0, 1.5, 2.4, 3.8], decay: 7.0 },    // Gong Zen Profondo
+        '5': { base: 120, partials: [1.0, 2.1, 3.5, 6.2], decay: 8.0 },    // Gong Basso
+        '6': { base: 528, partials: [1.0, 2.7, 4.8, 7.3], decay: 4.0 }     // Campana Tempio Solfeggio
+      };
 
-  const profile = bellProfiles[type] || bellProfiles['1'];
-  const masterGain = audioCtx.createGain();
-  masterGain.gain.setValueAtTime(volume * 0.4, now);
-  masterGain.connect(audioCtx.destination);
+      const profile = bellProfiles[type] || bellProfiles['1'];
+      const masterGain = audioCtx.createGain();
+      masterGain.gain.setValueAtTime(volume * 0.4, now);
+      masterGain.connect(audioCtx.destination);
 
-  profile.partials.forEach((ratio, index) => {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+      profile.partials.forEach((ratio, index) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
 
-    // Piccola variazione (detune) per creare il tipico "battimento" caldo del metallo
-    const detune = (index % 2 === 0 ? 0.8 : -0.8) * index;
-    const freq = profile.base * ratio;
+        const detune = (index % 2 === 0 ? 0.8 : -0.8) * index;
+        const freq = profile.base * ratio;
 
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq + detune, now);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq + detune, now);
 
-    // I sovrattoni acuti decadono più velocemente rispetto alla fondamentale profonda
-    const partialDecay = profile.decay / (1 + index * 0.5);
-    const initialAmp = 1 / Math.pow(index + 1, 1.2); // Ampiezza decrescente per i sovrattoni
+        const partialDecay = profile.decay / (1 + index * 0.5);
+        const initialAmp = 1 / Math.pow(index + 1, 1.2);
 
-    gain.gain.setValueAtTime(initialAmp, now);
-    // Transizione morbida di attacco e decadimento naturale
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + partialDecay);
+        gain.gain.setValueAtTime(initialAmp, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + partialDecay);
 
-    osc.connect(gain);
-    gain.connect(masterGain);
+        osc.connect(gain);
+        gain.connect(masterGain);
 
-    osc.start(now);
-    osc.stop(now + partialDecay);
-  });
-}
+        osc.start(now);
+        osc.stop(now + partialDecay);
+      });
+    }
 
     function toggleTimer() {
       if (isRunning) {
@@ -639,6 +663,7 @@ function playBell(volume = 1.0) {
       isRunning = true;
       document.getElementById('playIcon').textContent = '❚❚';
       document.getElementById('startBtnText').textContent = 'Pausa';
+      requestWakeLock();
 
       if (currentPhase === 'idle') {
         const totalMin = parseInt(document.getElementById('totalTime').value);
@@ -659,24 +684,31 @@ function playBell(volume = 1.0) {
         playBell(1.0);
       }
 
+      targetEndTime = Date.now() + (remainingSeconds * 1000);
+
       timerInterval = setInterval(() => {
-        remainingSeconds--;
+        const now = Date.now();
+        const newRemaining = Math.max(0, Math.round((targetEndTime - now) / 1000));
 
-        if (currentPhase === 'prep' && remainingSeconds === (totalSeconds - prepSeconds)) {
-          currentPhase = 'meditation';
-          playBell(1.0);
+        if (newRemaining !== remainingSeconds) {
+          remainingSeconds = newRemaining;
+
+          if (currentPhase === 'prep' && remainingSeconds <= (totalSeconds - prepSeconds)) {
+            currentPhase = 'meditation';
+            playBell(1.0);
+          }
+
+          if (currentPhase === 'meditation' && intervalMarkers.includes(remainingSeconds)) {
+            playBell(0.5);
+          }
+
+          if (remainingSeconds <= 0) {
+            completeTimer();
+          }
+
+          updateDisplay();
         }
-
-        if (currentPhase === 'meditation' && intervalMarkers.includes(remainingSeconds)) {
-          playBell(0.5);
-        }
-
-        if (remainingSeconds <= 0) {
-          completeTimer();
-        }
-
-        updateDisplay();
-      }, 1000);
+      }, 500);
 
       updateDisplay();
     }
@@ -684,6 +716,7 @@ function playBell(volume = 1.0) {
     function pauseTimer() {
       clearInterval(timerInterval);
       isRunning = false;
+      releaseWakeLock();
       document.getElementById('playIcon').textContent = '►';
       document.getElementById('startBtnText').textContent = 'Riprendi';
       document.getElementById('statusTag').textContent = 'PAUSA';
@@ -693,6 +726,7 @@ function playBell(volume = 1.0) {
       clearInterval(timerInterval);
       isRunning = false;
       currentPhase = 'idle';
+      releaseWakeLock();
 
       const totalMin = parseInt(document.getElementById('totalTime').value) || 10;
       prepSeconds = parseInt(document.getElementById('prepTime').value) || 0;
@@ -711,6 +745,7 @@ function playBell(volume = 1.0) {
     function completeTimer() {
       clearInterval(timerInterval);
       isRunning = false;
+      releaseWakeLock();
       playBell(1.0);
 
       const completedMinutes = parseInt(document.getElementById('totalTime').value);
