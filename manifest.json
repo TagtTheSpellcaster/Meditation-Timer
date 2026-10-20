@@ -1,6 +1,6 @@
 {
-  "name": "Zen Meditation Timer",
-  "short_name": "ZenTimer",
+  "name": "Meditation Timer",
+  "short_name": "MeditationTimer",
   "description": "Timer per la meditazione con suoni di campane tibetane.",
   "start_url": "./index.html",
   "display": "standalone",
