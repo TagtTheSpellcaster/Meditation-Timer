@@ -92,6 +92,20 @@
       gap: 8px;
     }
 
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+      cursor: pointer;
+      accent-color: var(--accent);
+      transform: scale(1.2);
+    }
+
     label {
       font-size: 0.85rem;
       color: var(--text-muted);
@@ -415,6 +429,14 @@
         </select>
       </div>
 
+      <!-- Checkbox Attivazione Lettura Vocale -->
+      <div class="control-group" style="margin-bottom: 15px;">
+        <label class="checkbox-group">
+          <input type="checkbox" id="enableSpeech" checked>
+          <span style="color: var(--text);">Abilita lettura vocale guidata</span>
+        </label>
+      </div>
+
       <button class="btn-main" style="width: 100%; justify-content: center; margin-top: 10px;" onclick="saveAndCloseSettings()">Salva e Chiudi</button>
     </div>
   </div>
@@ -430,10 +452,10 @@
     let targetEndTime = null;
     let isRunning = false;
     let currentPhase = 'idle'; 
-    let currentPeriod = 0; // Contatore del periodo attuale (1-based)
+    let currentPeriod = 0; 
     let totalPeriods = 1;
-    let readingTargetPeriod = 1; // In quale periodo deve avvenire la lettura
-    let activeMeditationDuration = 0; // Durata del singolo blocco di meditazione
+    let readingTargetPeriod = 1; 
+    let activeMeditationDuration = 0; 
     let accumulatedMinutes = 0;
     let intervalMarkers = [];
     let wakeLock = null;
@@ -552,7 +574,8 @@
         prepTime: document.getElementById('prepTime').value,
         intervals: document.getElementById('intervals').value,
         bellSound: document.getElementById('bellSound').value,
-        selectedPractice: document.getElementById('practiceSelect').value
+        selectedPractice: document.getElementById('practiceSelect').value,
+        enableSpeech: document.getElementById('enableSpeech').checked
       };
       localStorage.setItem('zen_timer_settings', JSON.stringify(settings));
     }
@@ -565,6 +588,7 @@
         if (s.prepTime) document.getElementById('prepTime').value = s.prepTime;
         if (s.intervals) document.getElementById('intervals').value = s.intervals;
         if (s.bellSound) document.getElementById('bellSound').value = s.bellSound;
+        if (s.enableSpeech !== undefined) document.getElementById('enableSpeech').checked = s.enableSpeech;
         if (s.selectedPractice) {
           document.getElementById('practiceSelect').value = s.selectedPractice;
           document.getElementById('practiceSelect').dispatchEvent(new Event('change'));
@@ -640,23 +664,18 @@
       return bullets;
     }
 
-    function measureSpeechDuration(text) {
-      return new Promise(resolve => {
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'it-IT';
-        u.rate = 0.9;
-        const start = performance.now();
-        u.onend = () => {
-          const duration = (performance.now() - start) / 1000;
-          resolve(duration);
-        };
-        u.onerror = () => resolve(3); // Fallback di stima in caso di errore
-        speechSynth.speak(u);
-      });
+    function estimateSpeechDuration(text) {
+      // Stima precisa del parlato italiano a rate 0.9: circa 3 parole al secondo + 0.5s di margine
+      const wordCount = text.trim().split(/\s+/).length;
+      return (wordCount / 3.0) + 0.5;
     }
 
-    async function startGuidedReading(blockDurationSec) {
+    function startGuidedReading(blockDurationSec) {
       stopGuidedReading();
+
+      // Verifica se la lettura è abilitata nelle impostazioni
+      const isSpeechEnabled = document.getElementById('enableSpeech').checked;
+      if (!isSpeechEnabled) return;
 
       const pId = parseInt(document.getElementById('practiceSelect').value);
       if (pId === 0) return;
@@ -669,27 +688,19 @@
 
       isReadingActive = true;
 
-      // 1. Calcola la durata netta della voce per tutti i punti
+      // 1. Calcola la durata totale stmata della voce
       let totalSpeechTime = 0;
-      const speechDurations = [];
+      bullets.forEach(text => {
+        totalSpeechTime += estimateSpeechDuration(text);
+      });
 
-      for (let text of bullets) {
-        if (!isReadingActive) return;
-        const dur = await measureSpeechDuration(text);
-        speechDurations.push(dur);
-        totalSpeechTime += dur;
-      }
-
-      if (!isReadingActive) return;
-
-      // 2. Calcola lo spazio temporale utile e le pause
-      const windowDuration = blockDurationSec - 15; // Lascia 15 secondi finali
+      // 2. Calcola la pausa uniforme tra i punti
+      const windowDuration = blockDurationSec - 15; // Lascia 15s finali
       const totalPauseTime = windowDuration - totalSpeechTime;
-      
       const numGaps = bullets.length - 1;
       const pauseInterval = numGaps > 0 ? Math.max(1, totalPauseTime / numGaps) : 0;
 
-      // 3. Sequenza di riproduzione temporizzata
+      // 3. Avvia la sequenza
       speakBulletSequence(bullets, pauseInterval, 0);
     }
 
@@ -752,7 +763,6 @@
         const activeMeditationTime = totalSeconds - prepSeconds;
         activeMeditationDuration = activeMeditationTime / totalPeriods;
 
-        // Determina il periodo bersaglio per la lettura
         readingTargetPeriod = totalPeriods === 1 ? 1 : 2;
 
         intervalMarkers = [];
@@ -764,7 +774,6 @@
         currentPeriod = currentPhase === 'meditation' ? 1 : 0;
         playBell(1.0);
 
-        // Se non c'è preparazione e il blocco bersaglio è il primo, avvia la lettura subito
         if (currentPhase === 'meditation' && currentPeriod === readingTargetPeriod) {
           startGuidedReading(activeMeditationDuration);
         }
@@ -781,7 +790,6 @@
         if (newRemaining !== remainingSeconds) {
           remainingSeconds = newRemaining;
 
-          // Transizione da Preparazione a Meditazione (Periodo 1)
           if (currentPhase === 'prep' && remainingSeconds <= (totalSeconds - prepSeconds)) {
             currentPhase = 'meditation';
             currentPeriod = 1;
@@ -792,7 +800,6 @@
             }
           }
 
-          // Rintocco Intervallo / Passaggio al Periodo Successivo
           if (currentPhase === 'meditation' && intervalMarkers.includes(remainingSeconds)) {
             playBell(0.5);
             currentPeriod++;
