@@ -706,11 +706,30 @@
 
     function speakBulletSequence(bullets, pauseSec, index) {
       if (index >= bullets.length || !isReadingActive || !isRunning) return;
-
-      const u = new SpeechSynthesisUtterance(bullets[index]);
+    
+      // Pre-elaborazione del testo per ammorbidire le uscite di frase
+      let textToSpeak = bullets[index];
+      if (!textToSpeak.endsWith('...')) {
+        textToSpeak = textToSpeak.replace(/\.$/, '') + '...';
+      }
+    
+      const u = new SpeechSynthesisUtterance(textToSpeak);
       u.lang = 'it-IT';
-      u.rate = 0.9;
-
+      u.rate = 0.82;   // Velocità rilassata e cadenzata
+      u.pitch = 0.82;  // Tono profondo, caldo e meno squillante
+      u.volume = 0.70; // Volume morbido di sottofondo
+    
+      // Cerca prioritariamente voci femminili/naturali di qualità
+      const voices = speechSynth.getVoices();
+      const bestFemaleVoice = voices.find(v => 
+        v.lang.includes('it') && 
+        (v.name.includes('Enhanced') || v.name.includes('Natural') || v.name.includes('Alice') || v.name.includes('Federica') || v.name.includes('Google italiano'))
+      ) || voices.find(v => v.lang.includes('it'));
+    
+      if (bestFemaleVoice) {
+        u.voice = bestFemaleVoice;
+      }
+    
       u.onend = () => {
         if (index < bullets.length - 1 && isReadingActive && isRunning) {
           speechTimeout = setTimeout(() => {
@@ -718,7 +737,7 @@
           }, pauseSec * 1000);
         }
       };
-
+    
       u.onerror = () => {
         if (index < bullets.length - 1 && isReadingActive && isRunning) {
           speechTimeout = setTimeout(() => {
@@ -726,7 +745,7 @@
           }, pauseSec * 1000);
         }
       };
-
+    
       speechSynth.speak(u);
     }
 
