@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meditation Timer</title>
+  <title>Timer Meditazione Zen</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#121212">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -11,13 +11,14 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     :root {
-      --bg: #121212;
-      --card-bg: #1e1e1e;
-      --accent: #d4af37;
-      --accent-muted: #8a7322;
+      --bg: #0b0d12;
+      --card-bg: #151821;
+      --accent: #f39c12;
+      --accent-muted: #8a5a00;
       --text: #e0e0e0;
-      --text-muted: #a0a0a0;
+      --text-muted: #7f8c8d;
       --prep-color: #e67e22;
+      --border: rgba(255, 255, 255, 0.08);
     }
 
     * {
@@ -43,43 +44,106 @@
       max-width: 480px;
       display: flex;
       flex-direction: column;
+      align-items: center;
       gap: 20px;
     }
 
     header {
       text-align: center;
+      margin-bottom: 5px;
     }
 
     h1 {
-      font-size: 1.8rem;
+      font-size: 1.6rem;
       font-weight: 300;
-      letter-spacing: 2px;
+      letter-spacing: 3px;
       color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 4px;
     }
 
     .badge {
       display: inline-block;
-      margin-top: 5px;
+      margin-top: 8px;
       padding: 4px 12px;
-      background: rgba(212, 175, 55, 0.1);
+      background: rgba(243, 156, 18, 0.1);
       border: 1px solid var(--accent-muted);
       border-radius: 20px;
       font-size: 0.8rem;
       color: var(--accent);
     }
 
-    .card {
+    /* Card Selezione Pratica */
+    .practice-card {
+      width: 100%;
       background-color: var(--card-bg);
+      border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      padding: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     }
 
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    select, input {
+      width: 100%;
+      padding: 10px;
+      background-color: #1c202c;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    select:focus, input:focus {
+      border-color: var(--accent);
+    }
+
+    .guide-box {
+      display: none;
+      margin-top: 15px;
+      padding: 15px;
+      background-color: #10121a;
+      border-left: 3px solid var(--accent);
+      border-radius: 4px;
+      max-height: 250px;
+      overflow-y: auto;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .guide-box h2, .guide-box h3 {
+      color: var(--accent);
+      margin: 10px 0 5px 0;
+      font-size: 1.1rem;
+    }
+
+    .guide-box ul {
+      margin-left: 20px;
+      margin-bottom: 10px;
+    }
+
+    /* Timer Display Concentrico */
     .timer-display {
       position: relative;
-      width: 240px;
-      height: 240px;
-      margin: 0 auto;
+      width: 260px;
+      height: 260px;
+      margin: 10px 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -92,118 +156,193 @@
 
     .progress-ring-circle {
       stroke: var(--accent);
-      stroke-dasharray: 691;
+      stroke-dasharray: 722;
       stroke-dashoffset: 0;
-      transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+      transition: stroke-dashoffset 0.5s linear, stroke 0.3s ease;
     }
 
     .timer-text {
       position: absolute;
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .status-tag {
+      background: rgba(243, 156, 18, 0.15);
+      color: var(--accent);
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
     }
 
     .time-left {
-      font-size: 2.5rem;
+      font-size: 3.2rem;
       font-weight: 200;
       letter-spacing: 1px;
+      font-family: monospace, sans-serif;
     }
 
-    .phase-label {
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
+    .info-subtext {
+      font-size: 0.75rem;
       color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Pulsanti di Controllo Principali */
+    .actions-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
       margin-top: 5px;
     }
 
-    .control-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 15px;
-    }
-
-    label {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    select, input {
-      width: 100%;
-      padding: 10px;
-      background-color: #2a2a2a;
-      border: 1px solid #3a3a3a;
-      border-radius: 6px;
+    .btn-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background-color: var(--card-bg);
       color: var(--text);
-      font-size: 1rem;
-      outline: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
 
-    select:focus, input:focus {
+    .btn-circle:hover {
       border-color: var(--accent);
+      color: var(--accent);
     }
 
-    .btn {
-      width: 100%;
-      padding: 12px;
+    .btn-main {
+      padding: 12px 36px;
+      border-radius: 25px;
       border: none;
-      border-radius: 6px;
       background-color: var(--accent);
       color: #000;
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
-      transition: opacity 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+      transition: transform 0.1s ease, opacity 0.2s;
     }
 
-    .btn:hover {
-      opacity: 0.9;
+    .btn-main:hover {
+      opacity: 0.95;
+    }
+
+    .btn-main:active {
+      transform: scale(0.98);
     }
 
     .btn-secondary {
-      background-color: #333;
+      width: 100%;
+      padding: 10px;
+      background-color: #1c202c;
+      border: 1px solid var(--border);
       color: var(--text);
-      margin-top: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+      font-size: 0.85rem;
     }
 
-    /* Stili per la Guida Pratica */
-    .practice-controls {
+    /* Modal / Popup Impostazioni */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 420px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    .modal-header h2 {
+      font-size: 1.1rem;
+      font-weight: 400;
+      color: var(--accent);
+      letter-spacing: 1px;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .close-btn:hover {
+      color: var(--text);
+    }
+
+    .prep-adjust {
       display: flex;
       gap: 8px;
     }
 
-    .guide-box {
-      display: none;
-      margin-top: 15px;
-      padding: 15px;
-      background-color: #252525;
-      border-left: 3px solid var(--accent);
-      border-radius: 4px;
-      max-height: 250px;
-      overflow-y: auto;
-      font-size: 0.9rem;
-      line-height: 1.5;
+    .btn-step {
+      padding: 8px 12px;
+      background: #1c202c;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
     }
 
-    .guide-box h2, .guide-box h3 {
-      color: var(--accent);
-      margin: 10px 0 5px 0;
-    }
-
-    .guide-box ul {
-      margin-left: 20px;
-      margin-bottom: 10px;
-    }
-
-    .hidden {
-      display: none !important;
-    }
     .footer-text {
       text-align: center;
       font-size: 0.75rem;
       color: var(--text-muted);
-      margin-top: 20px;
+      margin-top: 30px;
+      margin-bottom: 10px;
       opacity: 0.7;
+    }
+
+    .hidden {
+      display: none !important;
     }
   </style>
 </head>
@@ -211,77 +350,97 @@
 
   <div class="container">
     <header>
-      <h1>MEDITATION TIMER</h1>
+      <h1>Timer Meditazione</h1>
+      <div class="subtitle">Presenza e Pace Interiore</div>
       <div id="statsBadge" class="badge">Totale meditato: 0h 0m</div>
     </header>
 
     <!-- Sezione Selezione Pratica -->
-    <div class="card">
+    <div class="practice-card">
       <div class="control-group">
         <label for="practiceSelect">Scegli una pratica</label>
-        <div class="practice-controls">
-          <select id="practiceSelect">
-            <option value="0">-- Meditazione libera (solo timer) --</option>
-          </select>
-        </div>
+        <select id="practiceSelect">
+          <option value="0">-- Meditazione libera (solo timer) --</option>
+        </select>
       </div>
-      <button id="toggleGuideBtn" class="btn btn-secondary hidden" onclick="toggleGuide()">Mostra testo guida</button>
+      <button id="toggleGuideBtn" class="btn-secondary hidden" onclick="toggleGuide()">Mostra testo guida</button>
       <div id="guideBox" class="guide-box"></div>
     </div>
 
-    <!-- Timer e Visualizzazione -->
-    <div class="card">
-      <div class="timer-display">
-        <svg class="progress-ring" width="230" height="230">
-          <circle class="progress-ring-circle" id="progressRing" stroke-width="6" fill="transparent" r="110" cx="115" cy="115"/>
-        </svg>
-        <div class="timer-text">
-          <div id="timeLeft" class="time-left">10:00</div>
-          <div id="phaseLabel" class="phase-label">Pronto</div>
-        </div>
+    <!-- Timer Concentrico Principale -->
+    <div class="timer-display">
+      <svg class="progress-ring" width="250" height="250">
+        <circle class="progress-ring-circle" id="progressRing" stroke-width="4" fill="transparent" r="115" cx="125" cy="125"/>
+      </svg>
+      <div class="timer-text">
+        <div id="statusTag" class="status-tag">PRONTO</div>
+        <div id="timeLeft" class="time-left">10:00</div>
+        <div id="infoSubtext" class="info-subtext">Prep: 60s | 1 Periodo</div>
       </div>
     </div>
 
-    <!-- Controlli Timer -->
-    <div id="setupControls" class="card">
-      <div class="control-group">
-        <label for="totalTime">Tempo totale (minuti):</label>
+    <!-- Barra delle Azioni (Pulsante Avvio e Rotella) -->
+    <div class="actions-bar">
+      <button class="btn-circle" title="Reset" onclick="resetTimer()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      </button>
+
+      <button id="startBtn" class="btn-main" onclick="toggleTimer()">
+        <span id="playIcon">►</span> <span id="startBtnText">Inizia</span>
+      </button>
+
+      <button class="btn-circle" title="Impostazioni" onclick="openSettings()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+
+    <!-- Footer in fondo -->
+    <footer class="footer-text">
+      ABC della meditazione - Modulo C - ILTK Pomaia
+    </footer>
+  </div>
+
+  <!-- Modal Impostazioni -->
+  <div id="settingsModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>CONFIGURAZIONE SESSIONE</h2>
+        <button class="close-btn" onclick="closeSettings()">✕</button>
+      </div>
+
+      <div class="control-group" style="margin-bottom: 15px;">
+        <label for="totalTime">Tempo totale di meditazione (minuti):</label>
         <input type="number" id="totalTime" min="1" max="180" value="10">
       </div>
 
-      <div class="control-group">
+      <div class="control-group" style="margin-bottom: 15px;">
         <label for="prepTime">Tempo di preparazione (secondi, max 20%):</label>
-        <input type="number" id="prepTime" min="0" step="10" value="60">
+        <div class="prep-adjust">
+          <input type="number" id="prepTime" min="0" step="10" value="60">
+          <button class="btn-step" onclick="adjustPrep(-10)">-10s</button>
+          <button class="btn-step" onclick="adjustPrep(10)">+10s</button>
+        </div>
       </div>
 
-      <div class="control-group">
-        <label for="intervals">Suddivisione in periodi uguali:</label>
+      <div class="control-group" style="margin-bottom: 15px;">
+        <label for="intervals">Suddividi meditazione in periodi uguali:</label>
         <input type="number" id="intervals" min="1" max="10" value="1">
       </div>
 
-      <div class="control-group">
-        <label for="bellSound">Tono campana:</label>
+      <div class="control-group" style="margin-bottom: 15px;">
+        <label for="bellSound">Profilo Suono Campana:</label>
         <select id="bellSound">
-          <option value="1">Bell 1 (Default)</option>
-          <option value="2">Bell 2</option>
-          <option value="3">Bell 3</option>
-          <option value="4">Bell 4</option>
-          <option value="5">Bell 5</option>
-          <option value="6">Bell 6</option>
+          <option value="1">Bell 1: Deep Singing Bowl (Default)</option>
+          <option value="2">Bell 2: Medium Tibetan Bowl</option>
+          <option value="3">Bell 3: High Resonance Chime</option>
+          <option value="4">Bell 4: Clear Zen Gong</option>
+          <option value="5">Bell 5: Low Frequency Bass</option>
+          <option value="6">Bell 6: Bright Temple Bell</option>
         </select>
       </div>
 
-      <button class="btn" onclick="startTimer()">Inizia Meditazione</button>
+      <button class="btn-main" style="width: 100%; justify-content: center; margin-top: 10px;" onclick="saveAndCloseSettings()">Salva e Chiudi</button>
     </div>
-
-    <div id="activeControls" class="card hidden">
-      <button class="btn btn-secondary" onclick="stopTimer()">Interrompi</button>
-    </div>
-
-        <footer class="footer-text">
-          ABC della meditazione - Modulo C - ILTK Pomaia
-        </footer>
-
   </div>
 
   <!-- 1. Caricamento del file con i dati delle 16 pratiche -->
@@ -294,19 +453,46 @@
     let totalSeconds = 600;
     let prepSeconds = 60;
     let remainingSeconds = 600;
+    let targetEndTime = null;
+    let isRunning = false;
     let currentPhase = 'idle'; // 'prep', 'meditation', 'idle'
     let accumulatedMinutes = 0;
     let intervalMarkers = [];
+    let wakeLock = null;
 
-    // Inizializzazione
     window.addEventListener('DOMContentLoaded', () => {
       loadSettings();
       initPracticesMenu();
       updatePrepMax();
-      updateDisplay();
+      resetTimer();
     });
 
-    // Popola il selettore delle pratiche da practices.js
+    // Gestione Screen Wake Lock API
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+        }
+      } catch (err) {
+        console.warn('Wake Lock non disponibile o rifiutato:', err);
+      }
+    }
+
+    function releaseWakeLock() {
+      if (wakeLock !== null) {
+        wakeLock.release().then(() => {
+          wakeLock = null;
+        });
+      }
+    }
+
+    // Riattiva Wake Lock se la pagina riprende visibilità
+    document.addEventListener('visibilitychange', () => {
+      if (wakeLock !== null && document.visibilityState === 'visible' && isRunning) {
+        requestWakeLock();
+      }
+    });
+
     function initPracticesMenu() {
       const select = document.getElementById('practiceSelect');
       if (typeof MEDITATION_PRACTICES !== 'undefined') {
@@ -334,6 +520,7 @@
             toggleBtn.classList.remove('hidden');
           }
         }
+        saveSettings();
       });
     }
 
@@ -349,15 +536,30 @@
       }
     }
 
-    // Vincolo max 20% tempo di preparazione
-    document.getElementById('totalTime').addEventListener('input', () => {
-      updatePrepMax();
-      saveSettings();
-    });
+    function openSettings() {
+      document.getElementById('settingsModal').classList.add('active');
+    }
 
-    document.getElementById('prepTime').addEventListener('input', saveSettings);
-    document.getElementById('intervals').addEventListener('input', saveSettings);
-    document.getElementById('bellSound').addEventListener('change', saveSettings);
+    function closeSettings() {
+      document.getElementById('settingsModal').classList.remove('active');
+    }
+
+    function saveAndCloseSettings() {
+      saveSettings();
+      resetTimer();
+      closeSettings();
+    }
+
+    function adjustPrep(amount) {
+      const prepInput = document.getElementById('prepTime');
+      let val = parseInt(prepInput.value) + amount;
+      const maxVal = parseInt(prepInput.max);
+      if (val < 0) val = 0;
+      if (val > maxVal) val = maxVal;
+      prepInput.value = val;
+    }
+
+    document.getElementById('totalTime').addEventListener('input', updatePrepMax);
 
     function updatePrepMax() {
       const totalMin = parseInt(document.getElementById('totalTime').value) || 1;
@@ -369,7 +571,6 @@
       }
     }
 
-    // Persistenza LocalStorage
     function saveSettings() {
       const settings = {
         totalTime: document.getElementById('totalTime').value,
@@ -394,7 +595,6 @@
           document.getElementById('practiceSelect').dispatchEvent(new Event('change'));
         }
       }
-
       accumulatedMinutes = parseInt(localStorage.getItem('zen_total_minutes') || '0');
       updateStatsBadge();
     }
@@ -405,106 +605,161 @@
       document.getElementById('statsBadge').textContent = `Totale meditato: ${h}h ${m}m`;
     }
 
-    // Web Audio API Synth per Campane Tibetane
+    // Sintetizzatore Armonico di Campane Tibetane
     function playBell(volume = 1.0) {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === 'suspended') audioCtx.resume();
 
       const type = document.getElementById('bellSound').value;
-      const freqs = {
-        '1': [300, 600, 900],
-        '2': [220, 440, 660],
-        '3': [432, 864],
-        '4': [528, 1056],
-        '5': [150, 300, 450],
-        '6': [600, 1200]
-      }[type] || [300, 600];
+      const now = audioCtx.currentTime;
 
-      freqs.forEach(freq => {
+      const bellProfiles = {
+        '1': { base: 216, partials: [1.0, 2.76, 5.4, 8.9], decay: 6.0 },   // Campana Tibetana Profonda
+        '2': { base: 310, partials: [1.0, 2.71, 5.2, 8.1], decay: 5.0 },   // Campana Media Rinpoche
+        '3': { base: 432, partials: [1.0, 2.0, 3.01, 4.2], decay: 4.5 },   // Campana Armonica 432Hz
+        '4': { base: 180, partials: [1.0, 1.5, 2.4, 3.8], decay: 7.0 },    // Gong Zen Profondo
+        '5': { base: 120, partials: [1.0, 2.1, 3.5, 6.2], decay: 8.0 },    // Gong Basso
+        '6': { base: 528, partials: [1.0, 2.7, 4.8, 7.3], decay: 4.0 }     // Campana Tempio Solfeggio
+      };
+
+      const profile = bellProfiles[type] || bellProfiles['1'];
+      const masterGain = audioCtx.createGain();
+      masterGain.gain.setValueAtTime(volume * 0.4, now);
+      masterGain.connect(audioCtx.destination);
+
+      profile.partials.forEach((ratio, index) => {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
+
+        const detune = (index % 2 === 0 ? 0.8 : -0.8) * index;
+        const freq = profile.base * ratio;
+
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        
-        gain.gain.setValueAtTime(volume * 0.3, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 4.0);
+        osc.frequency.setValueAtTime(freq + detune, now);
+
+        const partialDecay = profile.decay / (1 + index * 0.5);
+        const initialAmp = 1 / Math.pow(index + 1, 1.2);
+
+        gain.gain.setValueAtTime(initialAmp, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + partialDecay);
 
         osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        gain.connect(masterGain);
 
-        osc.start();
-        osc.stop(audioCtx.currentTime + 4.0);
+        osc.start(now);
+        osc.stop(now + partialDecay);
       });
     }
 
-    // Logica Timer
+    function toggleTimer() {
+      if (isRunning) {
+        pauseTimer();
+      } else {
+        startTimer();
+      }
+    }
+
     function startTimer() {
-      const totalMin = parseInt(document.getElementById('totalTime').value);
-      prepSeconds = parseInt(document.getElementById('prepTime').value);
-      const numIntervals = parseInt(document.getElementById('intervals').value);
+      isRunning = true;
+      document.getElementById('playIcon').textContent = '❚❚';
+      document.getElementById('startBtnText').textContent = 'Pausa';
+      requestWakeLock();
 
-      totalSeconds = totalMin * 60;
-      remainingSeconds = totalSeconds;
+      if (currentPhase === 'idle') {
+        const totalMin = parseInt(document.getElementById('totalTime').value);
+        prepSeconds = parseInt(document.getElementById('prepTime').value);
+        const numIntervals = parseInt(document.getElementById('intervals').value);
 
-      // Calcolo marcatori intervalli
-      const activeMeditationTime = totalSeconds - prepSeconds;
-      const intervalDuration = activeMeditationTime / numIntervals;
-      intervalMarkers = [];
-      for (let i = 1; i < numIntervals; i++) {
-        intervalMarkers.push(Math.round(totalSeconds - prepSeconds - (i * intervalDuration)));
+        totalSeconds = totalMin * 60;
+        remainingSeconds = totalSeconds;
+
+        const activeMeditationTime = totalSeconds - prepSeconds;
+        const intervalDuration = activeMeditationTime / numIntervals;
+        intervalMarkers = [];
+        for (let i = 1; i < numIntervals; i++) {
+          intervalMarkers.push(Math.round(totalSeconds - prepSeconds - (i * intervalDuration)));
+        }
+
+        currentPhase = prepSeconds > 0 ? 'prep' : 'meditation';
+        playBell(1.0);
       }
 
-      document.getElementById('setupControls').classList.add('hidden');
-      document.getElementById('activeControls').classList.remove('hidden');
-
-      playBell(1.0); // Rintocco iniziale
-      
-      currentPhase = prepSeconds > 0 ? 'prep' : 'meditation';
+      targetEndTime = Date.now() + (remainingSeconds * 1000);
 
       timerInterval = setInterval(() => {
-        remainingSeconds--;
-        
-        // Cambio fase da prep a meditazione
-        if (currentPhase === 'prep' && remainingSeconds === (totalSeconds - prepSeconds)) {
-          currentPhase = 'meditation';
-          playBell(1.0); // Rintocco fine preparazione
-        }
+        const now = Date.now();
+        const newRemaining = Math.max(0, Math.round((targetEndTime - now) / 1000));
 
-        // Controllo marcatori di intervallo
-        if (currentPhase === 'meditation' && intervalMarkers.includes(remainingSeconds)) {
-          playBell(0.5); // Rintocco a metà volume
-        }
+        if (newRemaining !== remainingSeconds) {
+          remainingSeconds = newRemaining;
 
-        if (remainingSeconds <= 0) {
-          completeTimer(totalMin);
-        }
+          if (currentPhase === 'prep' && remainingSeconds <= (totalSeconds - prepSeconds)) {
+            currentPhase = 'meditation';
+            playBell(1.0);
+          }
 
-        updateDisplay();
-      }, 1000);
+          if (currentPhase === 'meditation' && intervalMarkers.includes(remainingSeconds)) {
+            playBell(0.5);
+          }
+
+          if (remainingSeconds <= 0) {
+            completeTimer();
+          }
+
+          updateDisplay();
+        }
+      }, 500);
 
       updateDisplay();
     }
 
-    function stopTimer() {
+    function pauseTimer() {
       clearInterval(timerInterval);
-      currentPhase = 'idle';
-      document.getElementById('setupControls').classList.remove('hidden');
-      document.getElementById('activeControls').classList.add('hidden');
-      document.getElementById('phaseLabel').textContent = 'Interrotto';
+      isRunning = false;
+      releaseWakeLock();
+      document.getElementById('playIcon').textContent = '►';
+      document.getElementById('startBtnText').textContent = 'Riprendi';
+      document.getElementById('statusTag').textContent = 'PAUSA';
     }
 
-    function completeTimer(completedMinutes) {
+    function resetTimer() {
       clearInterval(timerInterval);
-      playBell(1.0); // Rintocco finale
-      
+      isRunning = false;
+      currentPhase = 'idle';
+      releaseWakeLock();
+
+      const totalMin = parseInt(document.getElementById('totalTime').value) || 10;
+      prepSeconds = parseInt(document.getElementById('prepTime').value) || 0;
+      totalSeconds = totalMin * 60;
+      remainingSeconds = totalSeconds;
+
+      document.getElementById('playIcon').textContent = '►';
+      document.getElementById('startBtnText').textContent = 'Inizia';
+      document.getElementById('statusTag').textContent = 'PRONTO';
+      document.getElementById('statusTag').style.background = 'rgba(243, 156, 18, 0.15)';
+      document.getElementById('statusTag').style.color = 'var(--accent)';
+
+      updateDisplay();
+    }
+
+    function completeTimer() {
+      clearInterval(timerInterval);
+      isRunning = false;
+      releaseWakeLock();
+      playBell(1.0);
+
+      const completedMinutes = parseInt(document.getElementById('totalTime').value);
       accumulatedMinutes += completedMinutes;
       localStorage.setItem('zen_total_minutes', accumulatedMinutes);
       updateStatsBadge();
 
       currentPhase = 'idle';
-      document.getElementById('setupControls').classList.remove('hidden');
-      document.getElementById('activeControls').classList.add('hidden');
-      document.getElementById('phaseLabel').textContent = 'Completato';
+      document.getElementById('playIcon').textContent = '►';
+      document.getElementById('startBtnText').textContent = 'Inizia';
+      document.getElementById('statusTag').textContent = 'COMPLETATO';
+      
+      remainingSeconds = 0;
+      updateDisplay();
     }
 
     function updateDisplay() {
@@ -513,24 +768,30 @@
       document.getElementById('timeLeft').textContent = 
         `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 
-      const label = document.getElementById('phaseLabel');
+      const tag = document.getElementById('statusTag');
       const circle = document.getElementById('progressRing');
+      const numIntervals = parseInt(document.getElementById('intervals').value) || 1;
+
+      document.getElementById('infoSubtext').textContent = 
+        `Prep: ${prepSeconds}s | ${numIntervals} Periodo/i`;
 
       if (currentPhase === 'prep') {
-        label.textContent = 'Preparazione';
+        tag.textContent = 'PREPARAZIONE';
+        tag.style.background = 'rgba(230, 126, 34, 0.2)';
+        tag.style.color = 'var(--prep-color)';
         circle.style.stroke = 'var(--prep-color)';
       } else if (currentPhase === 'meditation') {
-        label.textContent = 'Meditazione';
+        tag.textContent = 'MEDITAZIONE';
+        tag.style.background = 'rgba(243, 156, 18, 0.2)';
+        tag.style.color = 'var(--accent)';
         circle.style.stroke = 'var(--accent)';
       }
 
-      // Anello di avanzamento
-      const circumference = 2 * Math.PI * 110;
+      const circumference = 2 * Math.PI * 115;
       const offset = circumference - (remainingSeconds / totalSeconds) * circumference;
-      circle.style.strokeDashoffset = offset;
+      circle.style.strokeDashoffset = isNaN(offset) ? 0 : offset;
     }
 
-    // Registrazione Service Worker per PWA
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
