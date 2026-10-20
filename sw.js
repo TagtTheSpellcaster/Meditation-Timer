@@ -2,6 +2,7 @@ const CACHE_NAME = 'zen-timer-v1';
 const ASSETS = [
   './',
   './index.html',
+  './practices.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
