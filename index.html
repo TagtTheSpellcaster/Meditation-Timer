@@ -577,36 +577,55 @@
       document.getElementById('statsBadge').textContent = `Totale meditato: ${h}h ${m}m`;
     }
 
-    function playBell(volume = 1.0) {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
+function playBell(volume = 1.0) {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
 
-      const type = document.getElementById('bellSound').value;
-      const freqs = {
-        '1': [300, 600, 900],
-        '2': [220, 440, 660],
-        '3': [432, 864],
-        '4': [528, 1056],
-        '5': [150, 300, 450],
-        '6': [600, 1200]
-      }[type] || [300, 600];
+  const type = document.getElementById('bellSound').value;
+  const now = audioCtx.currentTime;
 
-      freqs.forEach(freq => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        
-        gain.gain.setValueAtTime(volume * 0.3, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 4.0);
+  // Profili di frequenze e armonici realistici per campane tibetane e gong
+  // Frequenza base, rapporti di sovrattoni (partials) e decadimenti relativi
+  const bellProfiles = {
+    '1': { base: 216, partials: [1.0, 2.76, 5.4, 8.9], decay: 6.0 },   // Campana Tibetana Profonda
+    '2': { base: 310, partials: [1.0, 2.71, 5.2, 8.1], decay: 5.0 },   // Campana Media Rinpoche
+    '3': { base: 432, partials: [1.0, 2.0, 3.01, 4.2], decay: 4.5 },   // Campana Armonica 432Hz
+    '4': { base: 180, partials: [1.0, 1.5, 2.4, 3.8], decay: 7.0 },    // Gong Zen Profondo
+    '5': { base: 120, partials: [1.0, 2.1, 3.5, 6.2], decay: 8.0 },    // Gong Basso
+    '6': { base: 528, partials: [1.0, 2.7, 4.8, 7.3], decay: 4.0 }     // Campana Tempio Solfeggio
+  };
 
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
+  const profile = bellProfiles[type] || bellProfiles['1'];
+  const masterGain = audioCtx.createGain();
+  masterGain.gain.setValueAtTime(volume * 0.4, now);
+  masterGain.connect(audioCtx.destination);
 
-        osc.start();
-        osc.stop(audioCtx.currentTime + 4.0);
-      });
-    }
+  profile.partials.forEach((ratio, index) => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    // Piccola variazione (detune) per creare il tipico "battimento" caldo del metallo
+    const detune = (index % 2 === 0 ? 0.8 : -0.8) * index;
+    const freq = profile.base * ratio;
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq + detune, now);
+
+    // I sovrattoni acuti decadono più velocemente rispetto alla fondamentale profonda
+    const partialDecay = profile.decay / (1 + index * 0.5);
+    const initialAmp = 1 / Math.pow(index + 1, 1.2); // Ampiezza decrescente per i sovrattoni
+
+    gain.gain.setValueAtTime(initialAmp, now);
+    // Transizione morbida di attacco e decadimento naturale
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + partialDecay);
+
+    osc.connect(gain);
+    gain.connect(masterGain);
+
+    osc.start(now);
+    osc.stop(now + partialDecay);
+  });
+}
 
     function toggleTimer() {
       if (isRunning) {
