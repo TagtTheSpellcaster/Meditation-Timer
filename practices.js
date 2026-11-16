@@ -372,4 +372,167 @@ const MEDITATION_PRACTICES = [
 - Quando hai trovato la tua motivazione, fermati e immergiti nella sua esperienza, lasciando che diventi più forte e profonda.
 - Concludi tornando al respiro.`
   }
+,
+  {
+    id: 17,
+    title: "Beati i poveri in spirito – Meditazione sul distacco dall'ego",
+    summary: "Distacco dall'ego",
+    topic: "Riconoscere i propri attaccamenti e ridimensionare il bisogno di controllo, affermazione e possesso.",
+    content: `Tema: riconoscere i propri attaccamenti e ridimensionare il bisogno di controllo, affermazione e possesso.
+
+- Trova una posizione stabile e porta l'attenzione al respiro.
+- Osserva il ritmo naturale della respirazione senza modificarlo.
+- Porta alla mente gli elementi con cui definisci abitualmente la tua identità: il lavoro, le capacità, le conoscenze, il prestigio, le proprietà e le opinioni.
+- Osserva ciascuno di questi elementi come un'esperienza o un pensiero, senza identificarti completamente con esso.
+- Nota il bisogno di essere riconosciuto, di avere ragione o di controllare ciò che accade.
+- Non cercare di eliminare questi impulsi: riconoscili e lascia che si allentino.
+- Immagina di deporre simbolicamente, uno alla volta, gli oggetti che non hai più bisogno di portare.
+- Rimani per qualche momento nel silenzio, senza cercare di definire chi sei.
+- Concludi tornando al respiro.
+
+Formula contemplativa: «Non sono ciò che possiedo. Non sono ciò che so. Non sono ciò che gli altri pensano di me. Posso esistere senza dover dimostrare nulla.»`
+  },
+  {
+    id: 18,
+    title: "Beati quelli che sono nel pianto – Meditazione sull'accoglienza della sofferenza",
+    summary: "Accoglienza della sofferenza",
+    topic: "Accogliere la sofferenza propria e altrui senza fuggirla, trasformando il dolore in compassione.",
+    content: `Tema: accogliere la sofferenza propria e altrui senza fuggirla, trasformando il dolore in compassione.
+
+- Trova una posizione comoda e stabilizza l'attenzione sul respiro.
+- Porta alla mente una sofferenza che hai vissuto e che oggi riesci a osservare senza esserne sopraffatto.
+- Non cercare spiegazioni né giustificazioni: riconosci semplicemente che quella sofferenza è esistita.
+- Se il ricordo diventa troppo intenso, lascialo da parte e torna alle sensazioni del corpo e al respiro.
+- Inspirando, immagina di accogliere simbolicamente il dolore, rappresentato da una nube scura.
+- Espirando, immagina di trasformarlo in una luce calda che porta sollievo.
+- Ripeti il ciclo senza forzare il respiro.
+- Estendi gradualmente la pratica a una persona che sta soffrendo.
+- Immagina di poterle offrire sollievo, vicinanza e comprensione.
+- Concludi estendendo l'augurio a tutte le persone che attraversano un momento doloroso.
+
+Formula contemplativa: «Non devo fuggire dal dolore. Posso riconoscerlo, accoglierlo e lasciare che diventi comprensione.»`
+  },
+  {
+    id: 19,
+    title: "Beati i miti – Meditazione sulla non-aggressività",
+    summary: "Non-aggressività",
+    topic: "Interrompere le reazioni automatiche di irritazione e ostilità, coltivando pazienza e fermezza senza aggressività.",
+    content: `Tema: interrompere le reazioni automatiche di irritazione e ostilità, coltivando pazienza e fermezza senza aggressività.
+
+- Trova una posizione stabile e porta l'attenzione al respiro.
+- Ricorda una situazione recente nella quale hai reagito con irritazione o aggressività.
+- Rivivi mentalmente la situazione, osservando il momento immediatamente precedente alla tua reazione.
+- Nota le sensazioni del corpo e i pensieri che accompagnano la rabbia.
+- Immagina di fermarti prima di rispondere.
+- Respira e osserva l'impulso senza doverlo seguire.
+- Riconosci la rabbia come uno stato temporaneo della mente, non come qualcosa che definisce la tua persona.
+- Immagina di affrontare nuovamente la stessa situazione con fermezza, ma senza ostilità.
+- Considera come puoi difendere ciò che ritieni giusto senza alimentare il conflitto.
+- Rimani qualche momento in questa disposizione interiore.
+
+Formula contemplativa: «Posso essere fermo senza essere aggressivo. Posso difendere ciò che ritengo giusto senza alimentare l'odio.»`
+  },
+  {
+    id: 20,
+    title: "Beati quelli che hanno fame e sete della giustizia – Meditazione sull'intenzione retta",
+    summary: "Intenzione retta",
+    topic: "Distinguere il desiderio autentico di giustizia dal bisogno personale di avere ragione o di vedere sconfitto un avversario.",
+    content: `Tema: distinguere il desiderio autentico di giustizia dal bisogno personale di avere ragione o di vedere sconfitto un avversario.
+
+- Inizia con alcuni minuti di attenzione al respiro.
+- Porta alla mente una situazione di ingiustizia che ti ha colpito.
+- Osserva le emozioni che suscita: indignazione, rabbia, desiderio di punizione o impotenza.
+- Riconosci queste reazioni senza reprimerle e senza lasciarti guidare immediatamente da esse.
+- Domandati: «Desidero che questa ingiustizia venga corretta oppure desidero soprattutto che qualcuno venga sconfitto?»
+- Esamina la differenza tra il ripristino della giustizia e la soddisfazione personale.
+- Immagina una soluzione che corregga l'ingiustizia senza produrre ulteriore sofferenza.
+- Visualizza te stesso mentre agisci per quella soluzione, con lucidità e determinazione, senza odio e senza desiderio di vendetta.
+- Individua un'azione concreta e proporzionata che possa contribuire al bene.
+- Concludi tornando al respiro.
+
+Formula contemplativa: «Che la giustizia prevalga, non il mio orgoglio. Che il bene venga ristabilito, non semplicemente che il mio avversario venga sconfitto.»`
+  },
+  {
+    id: 21,
+    title: "Beati i misericordiosi – Meditazione sulla compassione",
+    summary: "Compassione",
+    topic: "Sviluppare una compassione attiva, capace di riconoscere la sofferenza anche in chi ha commesso errori o provocato sofferenza.",
+    content: `Tema: sviluppare una compassione attiva, capace di riconoscere la sofferenza anche in chi ha commesso errori o provocato sofferenza.
+
+- Stabilizza la mente sul respiro.
+- Porta alla mente una persona che sta soffrendo.
+- Osserva mentalmente la sua condizione senza giudicarla e senza cercare subito soluzioni.
+- Inspirando, accogli simbolicamente la sua sofferenza.
+- Espirando, invia mentalmente serenità, sollievo e possibilità di liberazione.
+- Ripeti il ciclo con una persona a te cara.
+- Passa poi a una persona neutrale, che conosci poco o con cui non hai un rapporto particolare.
+- Se te la senti, estendi la pratica a una persona con cui hai un rapporto difficile.
+- Non giustificare eventuali comportamenti dannosi: riconosci che anche chi provoca sofferenza può essere a sua volta condizionato dalla propria sofferenza.
+- Immagina una luce che si irradia dal centro del petto e raggiunge progressivamente queste persone.
+- Estendi infine l'augurio a tutti gli esseri senzienti.
+
+Formula contemplativa: «Che io possa riconoscere la sofferenza anche quando si nasconde dietro l'ostilità. Che io possa rispondere con compassione, senza rinunciare alla giustizia.»`
+  },
+  {
+    id: 22,
+    title: "Beati i puri di cuore – Meditazione sulla chiarezza interiore",
+    summary: "Chiarezza interiore",
+    topic: "Riconoscere le proprie motivazioni e distinguerle dall'autoinganno, dall'invidia e dall'interesse personale.",
+    content: `Tema: riconoscere le proprie motivazioni e distinguerle dall'autoinganno, dall'invidia e dall'interesse personale.
+
+- Siediti in silenzio e concentra l'attenzione sul respiro.
+- Immagina un lago immobile, limpido e trasparente.
+- Osserva il lago come rappresentazione della tua mente.
+- Porta alla mente una decisione che devi prendere o un'azione che hai compiuto.
+- Domandati: «Qual è la mia vera motivazione?»
+- Osserva senza censurare eventuali desideri di approvazione, vantaggio, riconoscimento o rivalsa.
+- Nota se le tue intenzioni dichiarate corrispondono a ciò che desideri realmente.
+- Lascia che ogni pensiero venga osservato e poi si allontani, come un'increspatura sulla superficie del lago.
+- Non cercare di ottenere una risposta immediata: rimani disponibile a riconoscere ciò che emerge.
+- Torna alla quiete e al respiro.
+
+Formula contemplativa: «Che le mie intenzioni siano limpide. Che le mie azioni non nascondano ciò che la mia coscienza già conosce.»`
+  },
+  {
+    id: 23,
+    title: "Beati gli operatori di pace – Meditazione sulla riconciliazione",
+    summary: "Riconciliazione e pace",
+    topic: "Coltivare amorevolezza, compassione, gioia compartecipe ed equanimità nelle relazioni con gli altri.",
+    content: `Tema: coltivare amorevolezza, compassione, gioia compartecipe ed equanimità nelle relazioni con gli altri.
+
+- Porta l'attenzione al respiro e lascia che la mente si stabilizzi.
+- Richiama alla mente una persona a te cara.
+- Coltiva il desiderio sincero che possa vivere nella serenità e conoscere la felicità.
+- Porta alla mente una persona che soffre e augurale sollievo e liberazione dalla sofferenza.
+- Pensa a qualcuno che ha raggiunto un risultato positivo o vive un momento felice.
+- Prova a condividere interiormente la sua gioia, senza invidia e senza confronto.
+- Porta infine alla mente una persona con cui hai un rapporto difficile.
+- Riconosci che, come te, anche questa persona desidera essere felice ed evitare la sofferenza.
+- Osserva le reazioni che sorgono e prova a mantenere un atteggiamento equilibrato.
+- Estendi gradualmente queste quattro qualità — amorevolezza, compassione, gioia compartecipe ed equanimità — a tutte le persone e a tutti gli esseri.
+- Concludi formulando l'intenzione di favorire la pace attraverso le parole e le azioni quotidiane.
+
+Formula contemplativa: «Che io non sia causa di divisione. Che le mie parole e le mie azioni possano favorire la pace.»`
+  },
+  {
+    id: 24,
+    title: "Beati i perseguitati per la giustizia – Meditazione sulla fermezza e sulla libertà interiore",
+    summary: "Fermezza ed equanimità",
+    topic: "Mantenere la propria integrità davanti all'ostilità e alle avversità, senza cedere all'odio o alla paura.",
+    content: `Tema: mantenere la propria integrità davanti all'ostilità e alle avversità, senza cedere all'odio o alla paura.
+
+- Stabilizza la mente sul respiro.
+- Porta alla mente una situazione nella quale hai subito un torto o un'ingiustizia.
+- Osserva il risentimento e le altre emozioni presenti, senza reprimerle.
+- Immagina di trovarti davanti a una montagna: il vento la attraversa e la pioggia la colpisce, ma essa rimane salda.
+- Visualizza te stesso come quella montagna.
+- Immagina le critiche, le offese e le avversità come fenomeni esterni che non determinano il valore della tua coscienza.
+- Distingui la fermezza dalla testardaggine e riconosci anche la possibilità di aver sbagliato.
+- Domandati quali principi desideri preservare e quali azioni concrete possono esprimerli.
+- Immagina di mantenere la tua posizione senza trasformare la sofferenza in odio o desiderio di vendetta.
+- Rimani per qualche momento nella consapevolezza che puoi scegliere le tue azioni indipendentemente dalle provocazioni esterne.
+- Concludi tornando al respiro.
+
+Formula contemplativa: «Che io non tradisca ciò che riconosco come giusto per paura, convenienza o desiderio di approvazione. Che la mia fermezza non diventi odio.»`
+  }
 ];
